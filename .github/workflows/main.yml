@@ -1,0 +1,41 @@
+name: Build Solution
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: "Relocation Section Editor.sln"
+      Configuration: ${{ matrix.configuration }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x' # Or the appropriate version for your solution
+
+    - name: Restore the application
+      run: dotnet restore $env:Solution_Name
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+    - name: Build the solution
+      run: dotnet build $env:Solution_Name --configuration $env:Configuration --no-restore
+
+    - name: Publish the application
+      run: dotnet publish $env:Solution_Name --configuration $env:Configuration --output publish_output
